@@ -13,21 +13,17 @@
       "config": {
         "maxLambdaSize": "50mb",
         "runtime": "python3.11",
-        "pythonVersion": "3.11"
-      }
-    },
-    {
-      "src": "api/handler.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.11",
-        "pythonVersion": "3.11"
+        "pythonVersion": "3.11",
+        "wsgiHandler": "api.wsgi:app"
       }
     }
   ],
   
   "routes": [
+    {
+      "src": "/api/health",
+      "dest": "api/handler.py"
+    },
     {
       "src": "/api/(.*)",
       "dest": "api/handler.py",
@@ -57,10 +53,6 @@
         {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
         }
       ]
     }
