@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "project": "tsla-analytics",
   "builds": [
     {
       "src": "api/handler.py",
@@ -14,10 +15,27 @@
     {
       "src": "/api/(.*)",
       "dest": "api/handler.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/handler.py"
     }
   ],
   "env": {
-    "DATABASE_URL": "@database_url",
-    "FLASK_ENV": "production"
+    "FLASK_ENV": "production",
+    "DEBUG": "false"
+  },
+  "envObjects": {
+    "production": {
+      "DATABASE_URL": "@database_url",
+      "FLASK_ENV": "production",
+      "DEBUG": "false"
+    }
+  },
+  "functions": {
+    "api/handler.py": {
+      "memory": 512,
+      "maxDuration": 30
+    }
   }
 }
