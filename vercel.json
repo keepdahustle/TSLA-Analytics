@@ -44,29 +44,7 @@
   
   "env": {
     "FLASK_ENV": "production",
-    "DEBUG": "false",
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_KEY": "@supabase_key"
-  },
-  
-  "envObjects": {
-    "production": {
-      "DATABASE_URL": "@database_url",
-      "SUPABASE_URL": "@supabase_url",
-      "SUPABASE_KEY": "@supabase_key",
-      "DB_HOST": "@db_host",
-      "DB_PORT": "6543",
-      "DB_NAME": "postgres",
-      "DB_USER": "@db_user",
-      "DB_PASSWORD": "@db_password",
-      "FLASK_ENV": "production",
-      "DEBUG": "false"
-    },
-    "preview": {
-      "DATABASE_URL": "@database_url_preview",
-      "FLASK_ENV": "development",
-      "DEBUG": "false"
-    }
+    "DEBUG": "false"
   },
   
   "regions": ["iad1"],
