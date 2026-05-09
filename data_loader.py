@@ -1,7 +1,13 @@
 """Load CSV data dan insert ke PostgreSQL"""
 import csv
+import os
+import sys
 from datetime import datetime
 import logging
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from database import execute_many, execute_query, execute_update
 from migrations.init_schema import create_tables
 
@@ -16,22 +22,32 @@ def load_tesla_stock_data(csv_path):
         with open(csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                date_obj = datetime.strptime(row['Date'], '%Y-%m-%d').date()
-                year = date_obj.year
-                quarter = (date_obj.month - 1) // 3 + 1
-                month = date_obj.month
-                
-                data.append((
-                    date_obj,
-                    float(row['Close']),
-                    float(row['High']),
-                    float(row['Low']),
-                    float(row['Open']),
-                    int(row['Volume']),
-                    year,
-                    quarter,
-                    month
-                ))
+                try:
+                    # Handle different date formats
+                    date_str = row['Date'].strip()
+                    try:
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    except:
+                        date_obj = datetime.strptime(date_str, '%d-%m-%Y').date()
+                    
+                    year = date_obj.year
+                    quarter = (date_obj.month - 1) // 3 + 1
+                    month = date_obj.month
+                    
+                    data.append((
+                        date_obj,
+                        float(row['Close']),
+                        float(row['High']),
+                        float(row['Low']),
+                        float(row['Open']),
+                        int(float(row['Volume'])),
+                        year,
+                        quarter,
+                        month
+                    ))
+                except Exception as row_error:
+                    logger.warning(f"Skipping row {row}: {row_error}")
+                    continue
         
         # Batch insert
         query = """
@@ -98,12 +114,21 @@ def load_predictions_sarima(csv_path):
         with open(csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                date_obj = datetime.strptime(row['Date'], '%Y-%m-%d').date()
-                data.append((
-                    date_obj,
-                    float(row['Actual']),
-                    float(row['SARIMA_Pred'])
-                ))
+                try:
+                    # Handle different date formats
+                    date_str = row['Date'].strip()
+                    try:
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    except:
+                        date_obj = datetime.strptime(date_str, '%d-%m-%Y').date()
+                    
+                    actual = float(row['Actual'])
+                    pred = float(row.get('SARIMA_Pred', row.get('SARIMA', 0)))
+                    
+                    data.append((date_obj, actual, pred))
+                except Exception as row_error:
+                    logger.warning(f"Skipping SARIMA row: {row_error}")
+                    continue
         
         query = """
             INSERT INTO predictions_sarima 
@@ -127,12 +152,21 @@ def load_predictions_prophet(csv_path):
         with open(csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                date_obj = datetime.strptime(row['Date'], '%Y-%m-%d').date()
-                data.append((
-                    date_obj,
-                    float(row['Actual']),
-                    float(row['Prophet_Pred'])
-                ))
+                try:
+                    # Handle different date formats
+                    date_str = row['Date'].strip()
+                    try:
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    except:
+                        date_obj = datetime.strptime(date_str, '%d-%m-%Y').date()
+                    
+                    actual = float(row['Actual'])
+                    pred = float(row.get('Prophet_Pred', row.get('Prophet', 0)))
+                    
+                    data.append((date_obj, actual, pred))
+                except Exception as row_error:
+                    logger.warning(f"Skipping Prophet row: {row_error}")
+                    continue
         
         query = """
             INSERT INTO predictions_prophet 

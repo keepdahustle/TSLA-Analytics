@@ -1,27 +1,35 @@
 import pandas as pd
 import numpy as np
 import os
+import sys
 import warnings
 warnings.filterwarnings("ignore")
 
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import dash
-from dash import dcc, html, dash_table
+from dash import dcc, html, dash_table, callback
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 # Import database initialization
-from database import init_pool, close_all_connections
-from data_accessor import DataAccessor
+try:
+    from database import init_pool, close_all_connections
+    from data_accessor import DataAccessor
+except ImportError as e:
+    print(f"[ERROR] Import error: {e}")
+    print("[INFO] Make sure you're running from Deploy directory")
+    raise
 
 # Initialize database pool
 try:
     init_pool()
+    print("[DEBUG] Database pool initialized successfully")
 except Exception as e:
     print(f"[ERROR] Failed to initialize database: {e}")
     raise
-
-print("[DEBUG] Database pool initialized successfully")
 
 # ── Colour System (Modern Light Fintech) ──────────────────────────────────
 C_RED       = "#E63946"
@@ -266,7 +274,7 @@ def sidebar():
             ) for icon, text, tab_id in nav_items]
         ]),
         # Footer info
-        html.Div(style={"padding":"12px 20px 20px","borderTop":f"1px solid {C_BORDER}","fontSize":"10px","color":C_GRAY"}, children=[
+        html.Div(style={"padding":"12px 20px 20px","borderTop":f"1px solid {C_BORDER}","fontSize":"10px","color":C_GRAY}, children=[
             html.Div("TSLA Analytics", style={"fontWeight":"600","marginBottom":"4px"}),
             html.Div("Powered by PostgreSQL", style={"opacity":"0.7"}),
         ])
@@ -473,18 +481,44 @@ app.layout = html.Div(style={"display":"flex","minHeight":"100vh"}, children=[
 ])
 
 # Callbacks
-@app.callback(
-    [Output("main-content", "children"), Output("current-tab", "data")],
-    [Input(f"nav-{tab_id}", "n_clicks") for tab_id, _, _ in [("overview", "", ""), ("eda", "", ""), ("predictions", "", ""), ("news", "", "")]],
+@callback(
+    [Output("main-content", "children")],
+    [Input(f"nav-overview", "n_clicks"),
+     Input(f"nav-eda", "n_clicks"),
+     Input(f"nav-predictions", "n_clicks"),
+     Input(f"nav-news", "n_clicks")],
     prevent_initial_call=False
 )
-def update_page(*clicks):
-    # Simplified - just rotate through pages
-    return [
-        html.Div(id="page-title", children="Overview", style={"fontSize":"32px","fontWeight":"700","color":C_DARK,"marginBottom":"4px"}),
-        html.Div(id="page-subtitle", children="Current Market Snapshot", style={"fontSize":"14px","color":C_GRAY,"marginBottom":"32px"}),
-        render_overview()
-    ], "overview"
+def update_page(click_overview, click_eda, click_pred, click_news):
+    """Update page content based on navigation clicks"""
+    # Get total clicks to determine which tab
+    ctx = dash.callback_context
+    
+    if not ctx.triggered:
+        # Initial load - show overview
+        return [html.Div([
+            html.Div("Overview", style={"fontSize":"32px","fontWeight":"700","color":C_DARK,"marginBottom":"4px"}),
+            html.Div("Current Market Snapshot", style={"fontSize":"14px","color":C_GRAY,"marginBottom":"32px"}),
+            render_overview()
+        ])]
+    
+    # Determine which button was clicked
+    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    content_map = {
+        "nav-overview": (render_overview, "Overview", "Current Market Snapshot"),
+        "nav-eda": (render_eda, "Analysis", "Historical Performance"),
+        "nav-predictions": (render_predictions, "AI Forecast", "Model Predictions"),
+        "nav-news": (render_news, "News Feed", "Latest TSLA Updates"),
+    }
+    
+    render_func, title, subtitle = content_map.get(button_id, (render_overview, "Overview", "Current Market Snapshot"))
+    
+    return [html.Div([
+        html.Div(title, style={"fontSize":"32px","fontWeight":"700","color":C_DARK,"marginBottom":"4px"}),
+        html.Div(subtitle, style={"fontSize":"14px","color":C_GRAY,"marginBottom":"32px"}),
+        render_func()
+    ])]
 
 if __name__ == "__main__":
     app.run(debug=False, port=8050, host="0.0.0.0")

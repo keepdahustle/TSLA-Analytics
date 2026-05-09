@@ -6,11 +6,24 @@ import logging
 from pathlib import Path
 
 # Add current directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+current_file = os.path.abspath(__file__)
+script_dir = os.path.dirname(current_file)
+sys.path.insert(0, script_dir)
 
-from database import init_pool, close_all_connections
-from migrations.init_schema import create_tables
-from data_loader import initialize_database
+try:
+    from database import init_pool, close_all_connections
+    from migrations.init_schema import create_tables
+    from data_loader import (
+        load_tesla_stock_data,
+        load_model_evaluation,
+        load_predictions_sarima,
+        load_predictions_prophet
+    )
+except ImportError as e:
+    print(f"[ERROR] Import failed: {e}")
+    print(f"[DEBUG] script_dir: {script_dir}")
+    print(f"[DEBUG] sys.path: {sys.path}")
+    raise
 
 # Setup logging
 logging.basicConfig(
@@ -25,9 +38,7 @@ def main():
         logger.info("Starting database setup...")
         
         # Get data directory path
-        # Jika script dijalankan dari Deploy folder, data ada di parent directory
-        # Jika dijalankan dari root, data ada di current directory
-        current_dir = Path(__file__).parent
+        current_dir = Path(script_dir)
         
         # Try to find CSV files
         csv_paths = {
@@ -42,7 +53,7 @@ def main():
             parent_path = current_dir.parent / csv_name
             if parent_path.exists():
                 csv_paths[csv_name] = str(parent_path)
-                logger.info(f"Found {csv_name} in parent directory")
+                logger.info(f"Found {csv_name} in parent directory: {parent_path}")
         
         # Check in current directory (alternative)
         for csv_name in csv_paths.keys():
@@ -50,7 +61,7 @@ def main():
                 current_path = current_dir / csv_name
                 if current_path.exists():
                     csv_paths[csv_name] = str(current_path)
-                    logger.info(f"Found {csv_name} in current directory")
+                    logger.info(f"Found {csv_name} in current directory: {current_path}")
         
         # Verify all files found
         missing_files = [name for name, path in csv_paths.items() if path is None]
@@ -69,13 +80,6 @@ def main():
         
         # Load data
         logger.info("Loading data from CSV files...")
-        from data_loader import (
-            load_tesla_stock_data,
-            load_model_evaluation,
-            load_predictions_sarima,
-            load_predictions_prophet
-        )
-        
         load_tesla_stock_data(csv_paths["Tesla_stock_data.csv"])
         load_model_evaluation(csv_paths["model_evaluation.csv"])
         load_predictions_sarima(csv_paths["predictions_sarima.csv"])

@@ -6,11 +6,20 @@ from datetime import datetime
 import sys
 import os
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add parent directory to path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 
-from database import init_pool, close_all_connections
-from data_accessor import DataAccessor
+try:
+    from database import init_pool, close_all_connections
+    from data_accessor import DataAccessor
+except ImportError as e:
+    print(f"[ERROR] Import failed: {e}")
+    print(f"[DEBUG] current_dir: {current_dir}")
+    print(f"[DEBUG] parent_dir: {parent_dir}")
+    print(f"[DEBUG] sys.path: {sys.path}")
+    raise
 
 app = Flask(__name__)
 CORS(app)
@@ -22,6 +31,7 @@ logger = logging.getLogger(__name__)
 # Initialize database pool on startup
 try:
     init_pool()
+    logger.info("Database pool initialized for API")
 except Exception as e:
     logger.error(f"Failed to initialize database: {e}")
 

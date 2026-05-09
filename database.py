@@ -14,8 +14,10 @@ def init_pool():
     """Initialize connection pool"""
     global _pool
     try:
+        if _pool is not None:
+            return
         _pool = SimpleConnectionPool(
-            1, 
+            1,
             POOL_SIZE,
             host=DB_CONFIG['host'],
             port=DB_CONFIG['port'],
