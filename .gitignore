@@ -2,13 +2,38 @@
 venv/
 env/
 .venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Environment files
+# ============================================================================
+# CRITICAL: Environment & Credentials (NEVER COMMIT)
+# ============================================================================
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+.env.supabase
+.env.vercel
 
-# IDE
+# Database credentials & backups
+*.sql
+database.sql
+schema.sql
+tesla_stock_insert.sql
+*.db
+*.sqlite
+*.sqlite3
+*.backup
+
+# Supabase keys & secrets
+supabase_keys.json
+supabase_config.json
+
+# ============================================================================
+# IDE & Editor
+# ============================================================================
 .vscode/
 .idea/
 *.swp
@@ -16,8 +41,15 @@ env/
 *.swn
 *~
 .DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings
 
+# ============================================================================
 # Python
+# ============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -35,18 +67,104 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+poetry.lock
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Logs
+# ============================================================================
+# Logs & Temporary Files
+# ============================================================================
 *.log
 logs/
+*.log.*
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================================================
+# OS Specific
+# ============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============================================================================
+# Vercel & Deployment
+# ============================================================================
+.vercel
+.vercel/
+node_modules/
+.next/
+out/
+
+# ============================================================================
+# Testing & Coverage
+# ============================================================================
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ============================================================================
+# Dependencies (lock files untuk development saja)
+# ============================================================================
+poetry.lock
+Pipfile.lock
+
+# ============================================================================
+# Cache & Temporary
+# ============================================================================
+*.cache
+.cache/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+*.tmp
+temp/
+tmp/
+
+# ============================================================================
+# IDE specific - VS Code
+# ============================================================================
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+*.code-workspace
+
+# ============================================================================
+# IDE specific - PyCharm
+# ============================================================================
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# ============================================================================
+# Backup files
+# ============================================================================
+*.bak
+*.backup
+*~
+*.swp
+*.swo
 
 # Testing
 .pytest_cache/

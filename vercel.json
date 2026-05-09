@@ -1,41 +1,95 @@
 {
   "version": 2,
   "project": "tsla-analytics",
+  "projectId": "prj_tsla_analytics",
+  "orgId": "org_tsla_analytics",
+  
+  "buildCommand": "pip install -r requirements.txt",
+  "outputDirectory": ".",
+  "installCommand": "pip install -r requirements.txt",
+  
   "builds": [
     {
       "src": "api/handler.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
-        "runtime": "python3.9"
+        "runtime": "python3.11",
+        "pythonVersion": "3.11"
+      }
+    },
+    {
+      "src": "dashboard.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "20mb",
+        "runtime": "python3.11"
       }
     }
   ],
+  
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "api/handler.py"
+      "dest": "api/handler.py",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    },
+    {
+      "src": "/dash/(.*)",
+      "dest": "dashboard.py"
     },
     {
       "src": "/(.*)",
       "dest": "api/handler.py"
     }
   ],
+  
   "env": {
     "FLASK_ENV": "production",
-    "DEBUG": "false"
+    "DEBUG": "false",
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_KEY": "@supabase_key"
   },
+  
   "envObjects": {
     "production": {
       "DATABASE_URL": "@database_url",
+      "SUPABASE_URL": "@supabase_url",
+      "SUPABASE_KEY": "@supabase_key",
+      "DB_HOST": "@db_host",
+      "DB_PORT": "6543",
+      "DB_NAME": "postgres",
+      "DB_USER": "@db_user",
+      "DB_PASSWORD": "@db_password",
       "FLASK_ENV": "production",
+      "DEBUG": "false"
+    },
+    "preview": {
+      "DATABASE_URL": "@database_url_preview",
+      "FLASK_ENV": "development",
       "DEBUG": "false"
     }
   },
-  "functions": {
-    "api/handler.py": {
-      "memory": 512,
-      "maxDuration": 30
+  
+  "regions": ["iad1"],
+  
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
+      ]
     }
-  }
+  ]
 }
