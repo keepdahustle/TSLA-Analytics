@@ -3,7 +3,7 @@ import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import RealDictCursor
 import logging
-from config import DB_CONFIG, POOL_SIZE, MAX_OVERFLOW, POOL_TIMEOUT, POOL_RECYCLE
+from config import DB_CONFIG, POOL_SIZE, MAX_OVERFLOW, POOL_TIMEOUT, POOL_RECYCLE, CONNECT_TIMEOUT, COMMAND_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,8 @@ def init_pool():
             database=DB_CONFIG['database'],
             user=DB_CONFIG['user'],
             password=DB_CONFIG['password'],
-            connect_timeout=10
+            connect_timeout=CONNECT_TIMEOUT,
+            options="-c statement_timeout=30000"  # 30 second query timeout
         )
         logger.info("Database connection pool initialized successfully")
     except Exception as e:

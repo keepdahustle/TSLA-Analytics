@@ -33,3 +33,7 @@ POOL_SIZE = 5
 MAX_OVERFLOW = 10
 POOL_TIMEOUT = 30
 POOL_RECYCLE = 3600
+
+# Vercel Serverless Settings
+CONNECT_TIMEOUT = 10  # Connection timeout in seconds
+COMMAND_TIMEOUT = 30  # Query timeout in seconds
