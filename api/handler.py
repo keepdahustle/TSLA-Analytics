@@ -46,6 +46,39 @@ def after_request(response):
     return response
 
 # ────────────────────────────────────────────────────────────────────────────
+# Root & Info Endpoints
+# ────────────────────────────────────────────────────────────────────────────
+
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint - API information"""
+    return jsonify({
+        "name": "TSLA Analytics API",
+        "version": "1.0.0",
+        "status": "ready",
+        "endpoints": {
+            "health": "/api/health",
+            "stock_all": "/api/stock/all",
+            "stock_by_year": "/api/stock/year/<year>",
+            "stock_by_quarter": "/api/stock/year/<year>/quarter/<quarter>",
+            "stock_latest": "/api/stock/latest",
+            "models_evaluation": "/api/models/evaluation",
+            "predictions_sarima": "/api/predictions/sarima",
+            "predictions_prophet": "/api/predictions/prophet",
+            "predictions_combined": "/api/predictions/combined"
+        }
+    }), 200
+
+@app.route('/api', methods=['GET'])
+def api_info():
+    """API information endpoint"""
+    return jsonify({
+        "name": "TSLA Analytics API",
+        "version": "1.0.0",
+        "status": "ready"
+    }), 200
+
+# ────────────────────────────────────────────────────────────────────────────
 # Health & Status Endpoints
 # ────────────────────────────────────────────────────────────────────────────
 
@@ -214,6 +247,26 @@ def internal_error(error):
         "status": "error",
         "message": "Internal server error",
         "code": 500
+    }), 500
+
+@app.errorhandler(404)
+def not_found(error):
+    """Handle 404 errors"""
+    return jsonify({
+        "code": 404,
+        "message": "Endpoint not found",
+        "status": "error",
+        "path": request.path
+    }), 404
+
+@app.errorhandler(500)
+def server_error(error):
+    """Handle 500 errors"""
+    logger.error(f"Server error: {error}")
+    return jsonify({
+        "code": 500,
+        "message": "Internal server error",
+        "status": "error"
     }), 500
 
 # For local development
