@@ -1,8 +1,6 @@
 {
   "version": 2,
-  "project": "tsla-analytics",
-  "projectId": "prj_tsla_analytics",
-  "orgId": "org_tsla_analytics",
+  "name": "tsla-analytics-dashboards",
   
   "buildCommand": "pip install -r requirements.txt",
   "outputDirectory": ".",
