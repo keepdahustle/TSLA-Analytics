@@ -28,8 +28,10 @@ logger = logging.getLogger(__name__)
 try:
     init_pool()
     logger.info("Database pool initialized for Dash app")
+    DB_AVAILABLE = True
 except Exception as e:
-    logger.error(f"Failed to initialize database: {e}")
+    logger.warning(f"Database not available on startup (will retry on first request): {e}")
+    DB_AVAILABLE = False
 
 # Initialize Dash app
 app = dash.Dash(__name__)
@@ -185,6 +187,12 @@ app.layout = html.Div([
 def update_metrics(n):
     """Update metrics"""
     try:
+        if not DB_AVAILABLE:
+            try:
+                init_pool()
+            except:
+                pass
+        
         df = DataAccessor.get_tesla_stock_data()
         latest = df.iloc[-1] if len(df) > 0 else None
         
@@ -218,9 +226,20 @@ def update_metrics(n):
                     html.Div(f"${latest['low']:.2f}", className='metric-value'),
                 ], className='metric-card'),
             ]
+        else:
+            return html.Div("Loading data...", style={'color': '#999', 'padding': '20px'})
     except Exception as e:
-        logger.error(f"Error updating metrics: {e}")
-        return html.Div(f"Error loading metrics: {str(e)}", style={'color': 'red'})
+        logger.warning(f"Error updating metrics: {e}")
+        return html.Div([
+            html.Div([
+                html.Div("Status", className='metric-label'),
+                html.Div("Loading...", className='metric-value'),
+            ], className='metric-card'),
+            html.Div([
+                html.Div("Note", className='metric-label'),
+                html.Div("Connecting to database", className='metric-value'),
+            ], className='metric-card'),
+        ])
 
 @callback(
     Output('stock-graph', 'figure'),

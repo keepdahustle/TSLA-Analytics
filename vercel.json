@@ -8,7 +8,7 @@
   
   "builds": [
     {
-      "src": "app.py",
+      "src": "api/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "50mb",
@@ -35,7 +35,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "app.py"
+      "dest": "api/wsgi.py"
     }
   ],
   
